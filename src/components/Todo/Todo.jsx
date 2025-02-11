@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import TodoForm from './TodoForm/TodoForm';
 import TodoCard from './TodoCard/TodoCard';
 import Header from './Header/Header';
-import './todo.scss';
+import './Todo.scss';
 
 function Index() {
     const [todos, setTodos] = useState([]);
