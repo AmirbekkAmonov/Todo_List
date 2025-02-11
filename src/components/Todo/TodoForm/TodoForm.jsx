@@ -1,23 +1,36 @@
 import { useState, useEffect, useRef } from 'react';
-import './TodoForm.scss'
+import './TodoForm.scss';
 
-function TodoForm() {
-    const [preview, setPreview] = useState(null);
-    const formRef = useRef(null);
-
-    const handleImageChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => setPreview(e.target.result);
-            reader.readAsDataURL(file);
+function TodoForm({ addOrUpdateTodo, editingTodo }) {
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        birthDate: '',
+        gender: '',
+        hobbies: [],
+        country: '',
+        image: null,
+        comment: ''
+    });
+    useEffect(() => {
+        if (editingTodo) {
+            setFormData(editingTodo);
+        } else {
+            setFormData({
+                name: '',
+                email: '',
+                phone: '',
+                birthDate: '',
+                gender: '',
+                hobbies: [],
+                country: '',
+                image: null,
+                comment: ''
+            });
         }
-    };
-
-    const handleRemoveImage = () => {
-        setPreview(null);
-        document.getElementById('profileImage').value = "";
-    };
+    }, [editingTodo]);
+    const formRef = useRef(null);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -30,43 +43,101 @@ function TodoForm() {
                 form.style.padding = '10px 0 20px 0';
             }
         };
-
         const formElement = formRef.current;
         formElement.addEventListener('scroll', handleScroll);
         return () => formElement.removeEventListener('scroll', handleScroll);
     }, []);
 
+
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        if (type === 'checkbox') {
+            setFormData((prev) => ({
+                ...prev,
+                hobbies: checked
+                    ? [...prev.hobbies, value]
+                    : prev.hobbies.filter((hobby) => hobby !== value)
+            }));
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                [name]: value
+            }));
+        }
+    };
+
+    const handleImageChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => setFormData((prev) => ({ ...prev, image: e.target.result }));
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        addOrUpdateTodo(formData);
+        setFormData({
+            name: '',
+            email: '',
+            phone: '',
+            birthDate: '',
+            gender: '',
+            hobbies: [],
+            country: '',
+            image: null,
+            comment: ''
+        });
+    };
+
     return (
-        <form ref={formRef}>
-            <div className='malumot'>
-                <input type="text" placeholder='' required />
-                <div className='labelline'>Ism va Familiya</div>
+        <form onSubmit={handleSubmit} ref={formRef}>
+            <div className="malumot">
+                <input type="text" name="name" value={formData.name} onChange={handleChange} required/>
+                <div className="labelline">Ism va Familiya</div>
             </div>
-            <div className='malumot'>
-                <input type="email" placeholder='' required />
-                <div className='labelline'>Email</div>
+
+            <div className="malumot">
+                <input type="email" name="email" value={formData.email} onChange={handleChange} required/>
+                <div className="labelline">Email</div>
             </div>
-            <div className='malumot'>
-                <input type="tel" placeholder='' required />
-                <div className='labelline'>Telefon Raqami</div>
+
+            <div className="malumot">
+                <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required/>
+                <div className="labelline">Telefon Raqami</div>
             </div>
-            <div className='malumot'>
-                <input type="date" />
-                <div className='labelline'>Tug'ilgan Sana</div>
+
+            <div className="malumot">
+                <input type="date" name="birthDate" value={formData.birthDate} onChange={handleChange}/>
+                <div className="labelline">Tug'ilgan Sana</div>
             </div>
-            <div className='malumot radio-group'>
+
+            <div className="malumot radio-group">
                 <label>Jinsingiz:</label>
-                <label><input type="radio" name="gender" value="Erkak" required /> Erkak</label>
-                <label><input type="radio" name="gender" value="Ayol" required /> Ayol</label>
+                <label>
+                    <input type="radio" name="gender" value="Erkak" checked={formData.gender === 'Erkak'} onChange={handleChange} required  /> Erkak
+                </label>
+                <label>
+                    <input type="radio" name="gender" value="Ayol" checked={formData.gender === 'Ayol'} onChange={handleChange} required /> Ayol
+                </label>
             </div>
-            <div className='malumot checkbox-group'>
+
+            <div className="malumot checkbox-group">
                 <label>Hobbilaringiz:</label>
-                <label><input type="checkbox" value="Sport" /> Sport</label>
-                <label><input type="checkbox" value="Kitob o'qish" /> Kitob o'qish</label>
-                <label><input type="checkbox" value="Musiqa" /> Musiqa</label>
+                <label>
+                    <input type="checkbox" name="hobbies" value="Sport" checked={formData.hobbies.includes('Sport')} onChange={handleChange}  /> Sport
+                </label>
+                <label>
+                    <input  type="checkbox"  name="hobbies"  value="Kitob o'qish"  checked={formData.hobbies.includes("Kitob o'qish")}  onChange={handleChange} /> Kitob o'qish
+                </label>
+                <label>
+                    <input type="checkbox" name="hobbies" value="Musiqa" checked={formData.hobbies.includes('Musiqa')} onChange={handleChange}/> Musiqa
+                </label>
             </div>
-            <div className='malumot'>
-                <select required>
+
+            <div className="malumot">
+                <select name="country" value={formData.country} onChange={handleChange} required >
                     <option value="">Mamlakatni tanlang</option>
                     <option value="Uzbekistan">O'zbekiston</option>
                     <option value="Kazakhstan">Qozog'iston</option>
@@ -74,21 +145,28 @@ function TodoForm() {
                     <option value="Russia">Rossiya</option>
                 </select>
             </div>
+
             <div className="malumot">
                 <label htmlFor="profileImage" className="custom-file-upload">📁 Surat Yuklash</label>
                 <input type="file" id="profileImage" accept="image/*" onChange={handleImageChange} />
-                {preview && (
+                {formData.image && (
                     <div className="image-preview">
-                        <img src={preview} alt="Rasm" className="preview" />
-                        <button type="button" className="remove-btn" onClick={handleRemoveImage}>✖</button>
+                        <img src={formData.image} alt="Rasm" className="preview" />
+                        <button type="button" className="remove-btn"
+                            onClick={() =>
+                                setFormData((prev) => ({ ...prev, image: null }))
+                            }> ✖
+                        </button>
                     </div>
                 )}
             </div>
-            <div className='malumot'>
-                <textarea placeholder='' rows="4"></textarea>
-                <div className='labelline'>Qo'shimcha Izoh</div>
+
+            <div className="malumot">
+                <textarea name="comment" value={formData.comment} onChange={handleChange} rows="4"></textarea>
+                <div className="labelline">Qo'shimcha Izoh</div>
             </div>
-            <button type="submit">Yuborish</button>
+
+            <button type="submit">{editingTodo ? 'Yangilash' : 'Yuborish'}</button>
         </form>
     );
 }
