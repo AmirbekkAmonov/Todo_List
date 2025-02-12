@@ -33,7 +33,8 @@ function Index() {
         const isDuplicate = todos.some(todo =>
             todo.name === newTodo.name &&
             todo.email === newTodo.email &&
-            todo.phone === newTodo.phone
+            todo.phone === newTodo.phone &&
+            todo.id !== newTodo.id
         );
 
         if (isDuplicate) {
@@ -46,7 +47,7 @@ function Index() {
                 prevTodos.map((todo) => (todo.id === newTodo.id ? newTodo : todo))
             );
         } else {
-            setTodos([...todos, { ...newTodo, id: crypto.randomUUID() }]);
+            setTodos([...todos, { ...newTodo, id:  Date.now().toString() }]);
         }
         setEditingTodo(null);
     };
